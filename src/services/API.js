@@ -34,8 +34,8 @@ export async function buscarPokemonPorId(id) {
   return normalizarPokemon(data)
 }
 
-export async function obtenerListaPokemones(limit = 20) {
-  const data = await request(`/pokemon?limit=${limit}`)
+export async function obtenerListaPokemones(limit = 30, offset = 0) {
+  const data = await request(`/pokemon?limit=${limit}&offset=${offset}`)
 
   const detalles = await Promise.all(
     data.results.map((pokemon) => fetch(pokemon.url).then((res) => res.json())),
@@ -46,5 +46,12 @@ export async function obtenerListaPokemones(limit = 20) {
 
 export async function obtenerTipoPokemon(tipo) {
   const data = await request(`/type/${tipo.toLowerCase().trim()}`)
-  return data.pokemon.map((item) => item.pokemon.name)
+
+  return {
+    nombre: data.name,
+    cantidadPokemon: data.pokemon.length,
+    movimientos: data.moves.length,
+    generacion: data.generation?.name || 'desconocida',
+    pokemones: data.pokemon.map((item) => item.pokemon.name),
+  }
 }
