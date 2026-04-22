@@ -1,33 +1,35 @@
 # TP02 - Mini Pokédex Web (React)
 
-Aplicación web simple hecha con **React + JSX + CSS + JavaScript** para consumir la API pública de Pokémon: [https://pokeapi.co/](https://pokeapi.co/).
+Esta es una app web simple hecha con **React + JSX + CSS + JavaScript** usando la API pública de Pokémon: [https://pokeapi.co/](https://pokeapi.co/).
 
-El objetivo del trabajo es practicar consumo de APIs REST con `fetch`, manejo de estados en React, renderizado dinámico de datos JSON y manejo de errores.
+La idea del trabajo fue practicar cómo pedir datos con `fetch`, manejar estados en React, mostrar info que viene en JSON y controlar errores para que no se rompa todo.
 
 ## Funcionalidades implementadas
 
-- Búsqueda de Pokémon por **nombre**.
-- Búsqueda de Pokémon por **ID**.
-- Visualización de datos principales:
+- Buscar Pokémon por **nombre**.
+- Buscar Pokémon por **ID**.
+- Mostrar datos principales:
   - nombre
   - imagen
   - tipo(s)
   - peso
   - altura
-- Carga de **lista limitada** de Pokémon (20).
-- Filtro de la lista por:
+- Cargar una **lista limitada** de Pokémon (20).
+- Filtrar la lista por:
   - nombre
   - tipo
-- Botón para **error intencional** (recurso inexistente).
-- Indicador de **loading** durante las peticiones.
+- Botón para provocar un **error intencional** (recurso inexistente).
+- Mostrar indicador de **loading** mientras se hacen las peticiones.
 - Validaciones básicas de inputs (vacío, ID numérico mayor a 0).
 
 ## Endpoints de PokéAPI utilizados
 
-- `GET /api/v2/pokemon/{name}` → búsqueda por nombre.
-- `GET /api/v2/pokemon/{id}` → búsqueda por ID.
-- `GET /api/v2/pokemon?limit=20` → lista limitada.
-- `GET /api/v2/type/{type}` → obtener los Pokémon de un tipo para filtrar.
+Estas son las consultas que usa la app, explicado simple:
+
+- `GET /api/v2/pokemon/{name}` → para buscar un Pokémon por nombre.
+- `GET /api/v2/pokemon/{id}` → para buscar un Pokémon por número (ID).
+- `GET /api/v2/pokemon?limit=20` → para traer una lista corta de Pokémon.
+- `GET /api/v2/type/{type}` → para traer Pokémon de un tipo y poder filtrar.
 - Error intencional usando nombre inexistente: `pokemon-que-no-existe-123456`.
 
 Base URL: `https://pokeapi.co/api/v2`
@@ -36,11 +38,11 @@ Base URL: `https://pokeapi.co/api/v2`
 
 ```text
 src/
-  App.jsx                 # Contenedor principal y lógica de UI
+  App.jsx                 # Componente principal con la lógica general de la pantalla
   App.css                 # Estilos principales
   index.css               # Estilos globales
   services/
-    API.js                # Funciones centralizadas de acceso a la API
+    API.js                # Funciones para hacer las consultas a la API en un solo lugar
   components/
     Titulos.jsx
     Titulos.css
@@ -53,18 +55,22 @@ src/
     cardResultado.jsx
 ```
 
+En general está dividido en un archivo principal (`App.jsx`), componentes chicos para reutilizar partes de la interfaz y un archivo de servicio (`API.js`) para no mezclar todo.
+
 ## Decisiones de implementación
 
-- Se centralizó el consumo de la API en `src/services/API.js` para mantener el código organizado.
-- Se normalizaron los datos del Pokémon en un solo formato antes de enviarlos a los componentes.
-- Se usó componentización simple, sin fragmentar de más.
-- Se aplicaron hooks (`useState`, `useEffect`, `useMemo`) solo para estado, carga inicial y filtrado de lista.
+- Puse todo el consumo de API en `src/services/API.js` para que no quede desordenado.
+- Antes de mostrar datos, los acomodé en un formato único para que los componentes reciban siempre lo mismo.
+- Traté de separar en componentes, pero sin exagerar y crear archivos de más.
+- Usé hooks (`useState`, `useEffect`, `useMemo`) solo para lo necesario: estado, carga inicial y filtros.
 
 ## Dificultades encontradas
 
-- Algunos archivos iniciales tenían estructura incompleta o imports incorrectos, se corrigieron de forma mínima.
-- El endpoint de lista devuelve URLs de detalle, por eso se realizó una segunda carga para completar datos de cards.
-- Se priorizó una solución académica y clara sobre una implementación avanzada.
+- Al principio había archivos con estructura incompleta o imports mal puestos, así que fui corrigiendo lo mínimo para que funcione.
+- Con `fetch` no siempre salía bien todo de una, y tuve que revisar respuestas para evitar errores raros.
+- La lista inicial trae URLs de detalle, no todos los datos listos, entonces hubo que hacer una segunda carga para completar las cards.
+- También tuve que manejar casos donde algo no existe (por ejemplo en la búsqueda), porque si no se rompía la vista.
+- La idea fue mantener una solución clara y de nivel académico, sin meter cosas avanzadas que no eran necesarias para este TP.
 
 ## Ejecución
 
@@ -73,4 +79,4 @@ npm install
 npm run dev
 ```
 
-Luego abrir la URL local que muestra Vite (normalmente `http://localhost:5173`).
+Después abrí la URL local que muestra Vite (normalmente `http://localhost:5173`).
