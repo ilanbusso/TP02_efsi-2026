@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import Titulo from './components/Titulos'
 import Subtitulo from './components/subtitulos'
@@ -18,7 +18,6 @@ function App() {
   const [id, setId] = useState('')
   const [pokemonResultado, setPokemonResultado] = useState(null)
   const [listaPokemones, setListaPokemones] = useState([])
-  const [filtroNombre, setFiltroNombre] = useState('')
   const [tipoBusqueda, setTipoBusqueda] = useState('')
   const [tipoResultado, setTipoResultado] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -104,30 +103,11 @@ function App() {
       setTipoResultado(data)
     } catch {
       setTipoResultado(null)
-      setError('No existe ese tipo de Pokémon.')
+      setError('Este tipo no existe')
     } finally {
       setLoading(false)
     }
   }
-
-  async function probarErrorIntencional() {
-    try {
-      setLoading(true)
-      setError('')
-      await buscarPokemonPorNombre('pokemon-que-no-existe-123456')
-    } catch {
-      setPokemonResultado(null)
-      setError('Error intencional: el recurso solicitado no existe.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const listaFiltrada = useMemo(() => {
-    return listaPokemones.filter((pokemon) =>
-      pokemon.nombre.toLowerCase().includes(filtroNombre.toLowerCase()),
-    )
-  }, [filtroNombre, listaPokemones])
 
   return (
     <main className="app">
@@ -154,29 +134,7 @@ function App() {
           <Boton type="submit" contenido="Buscar ID" />
         </form>
 
-        <div className="fila">
-          <Boton contenido="Probar error intencional" onClick={probarErrorIntencional} />
-        </div>
-
         {pokemonResultado && <CardResultado pokemon={pokemonResultado} />}
-      </section>
-
-      <section className="panel">
-        <Subtitulo contenido="Lista fija: primeros 30 Pokémon" />
-
-        <div className="fila">
-          <InputText
-            value={filtroNombre}
-            onChange={(event) => setFiltroNombre(event.target.value)}
-            placeholder="Filtrar esta lista por nombre"
-          />
-        </div>
-
-        <div className="lista-grid">
-          {listaFiltrada.map((pokemon) => (
-            <CardResultado key={pokemon.id} pokemon={pokemon} />
-          ))}
-        </div>
       </section>
 
       <section className="panel">
@@ -214,6 +172,16 @@ function App() {
             </ul>
           </div>
         )}
+      </section>
+
+      <section className="panel">
+        <Subtitulo contenido="Primeros 30 pokemones" />
+
+        <div className="lista-grid">
+          {listaPokemones.map((pokemon) => (
+            <CardResultado key={pokemon.id} pokemon={pokemon} />
+          ))}
+        </div>
       </section>
 
       {loading && <p className="estado">Cargando...</p>}
