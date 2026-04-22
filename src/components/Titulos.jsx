@@ -1,10 +1,7 @@
 import './Titulos.css'
-function Titulo(contenido){
-    return(
-        <div>
-            <h1>{contenido}</h1>
-        </div>
-    )
+
+function Titulo({ contenido }) {
+  return <h1 className="titulo-principal">{contenido}</h1>
 }
 
 export default Titulo

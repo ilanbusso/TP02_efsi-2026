@@ -1,8 +1,9 @@
-import 'boton.css'
-function boton(contenido){
-return(
-    <button>{contenido}</button>
-)
+function Boton({ contenido, onClick, type = 'button' }) {
+  return (
+    <button className="btn" type={type} onClick={onClick}>
+      {contenido}
+    </button>
+  )
 }
 
-export default boton
+export default Boton

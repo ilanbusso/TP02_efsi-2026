@@ -1,8 +1,15 @@
 import './inputTxt.css'
-function inputText(placeHolder){
-    return(
-        <input type="text" placeholder= {placeHolder}/>
-    )
+
+function InputText({ value, onChange, placeholder }) {
+  return (
+    <input
+      className="campo"
+      type="text"
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+    />
+  )
 }
 
-export default inputText
+export default InputText
