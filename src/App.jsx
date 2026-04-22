@@ -19,23 +19,23 @@ function App() {
   const [pokemonResultado, setPokemonResultado] = useState(null)
   const [listaPokemones, setListaPokemones] = useState([])
   const [filtroNombre, setFiltroNombre] = useState('')
-  const [filtroTipo, setFiltroTipo] = useState('')
-  const [nombresPorTipo, setNombresPorTipo] = useState(null)
+  const [tipoBusqueda, setTipoBusqueda] = useState('')
+  const [tipoResultado, setTipoResultado] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    cargarLista()
+    cargarListaFija()
   }, [])
 
-  async function cargarLista() {
+  async function cargarListaFija() {
     try {
       setLoading(true)
       setError('')
-      const data = await obtenerListaPokemones(20)
+      const data = await obtenerListaPokemones(30, 0)
       setListaPokemones(data)
     } catch {
-      setError('No se pudo cargar la lista inicial de Pokémon.')
+      setError('No se pudo cargar la lista fija de Pokémon.')
     } finally {
       setLoading(false)
     }
@@ -88,19 +88,22 @@ function App() {
     }
   }
 
-  async function manejarFiltroTipo() {
-    if (!filtroTipo.trim()) {
-      setNombresPorTipo(null)
+  async function manejarBusquedaTipo(event) {
+    event.preventDefault()
+
+    if (!tipoBusqueda.trim()) {
+      setTipoResultado(null)
+      setError('Ingresá un tipo para buscar.')
       return
     }
 
     try {
       setLoading(true)
       setError('')
-      const nombres = await obtenerTipoPokemon(filtroTipo)
-      setNombresPorTipo(nombres)
+      const data = await obtenerTipoPokemon(tipoBusqueda)
+      setTipoResultado(data)
     } catch {
-      setNombresPorTipo([])
+      setTipoResultado(null)
       setError('No existe ese tipo de Pokémon.')
     } finally {
       setLoading(false)
@@ -121,16 +124,10 @@ function App() {
   }
 
   const listaFiltrada = useMemo(() => {
-    return listaPokemones.filter((pokemon) => {
-      const coincideNombre = pokemon.nombre
-        .toLowerCase()
-        .includes(filtroNombre.toLowerCase())
-      const coincideTipo =
-        !nombresPorTipo || nombresPorTipo.includes(pokemon.nombre.toLowerCase())
-
-      return coincideNombre && coincideTipo
-    })
-  }, [filtroNombre, listaPokemones, nombresPorTipo])
+    return listaPokemones.filter((pokemon) =>
+      pokemon.nombre.toLowerCase().includes(filtroNombre.toLowerCase()),
+    )
+  }, [filtroNombre, listaPokemones])
 
   return (
     <main className="app">
@@ -165,23 +162,14 @@ function App() {
       </section>
 
       <section className="panel">
-        <Subtitulo contenido="Lista limitada y filtros" />
+        <Subtitulo contenido="Lista fija: primeros 30 Pokémon" />
 
         <div className="fila">
           <InputText
             value={filtroNombre}
             onChange={(event) => setFiltroNombre(event.target.value)}
-            placeholder="Filtrar lista por nombre"
+            placeholder="Filtrar esta lista por nombre"
           />
-        </div>
-
-        <div className="fila">
-          <InputText
-            value={filtroTipo}
-            onChange={(event) => setFiltroTipo(event.target.value)}
-            placeholder="Filtrar por tipo (ej: fire, water)"
-          />
-          <Boton contenido="Aplicar tipo" onClick={manejarFiltroTipo} />
         </div>
 
         <div className="lista-grid">
@@ -189,6 +177,43 @@ function App() {
             <CardResultado key={pokemon.id} pokemon={pokemon} />
           ))}
         </div>
+      </section>
+
+      <section className="panel">
+        <Subtitulo contenido="Búsqueda por tipo" />
+
+        <form onSubmit={manejarBusquedaTipo} className="fila">
+          <InputText
+            value={tipoBusqueda}
+            onChange={(event) => setTipoBusqueda(event.target.value)}
+            placeholder="Buscar tipo (ej: fire, water, grass)"
+          />
+          <Boton type="submit" contenido="Buscar tipo" />
+        </form>
+
+        {tipoResultado && (
+          <div className="tipo-resultado">
+            <p>
+              <strong>Tipo:</strong> {tipoResultado.nombre}
+            </p>
+            <p>
+              <strong>Generación:</strong> {tipoResultado.generacion}
+            </p>
+            <p>
+              <strong>Cantidad de Pokémon:</strong> {tipoResultado.cantidadPokemon}
+            </p>
+            <p>
+              <strong>Movimientos asociados:</strong> {tipoResultado.movimientos}
+            </p>
+
+            <h3>Pokémon asociados</h3>
+            <ul className="tipo-lista">
+              {tipoResultado.pokemones.map((nombrePokemon) => (
+                <li key={nombrePokemon}>{nombrePokemon}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       {loading && <p className="estado">Cargando...</p>}
