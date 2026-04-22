@@ -1,8 +1,7 @@
 import './subtitulos.css'
-function subtitulo(contenido){
-    return(
-        <h3>{contenido}</h3>
-    )
+
+function Subtitulo({ contenido }) {
+  return <h2 className="subtitulo">{contenido}</h2>
 }
 
-export default subtitulo
+export default Subtitulo

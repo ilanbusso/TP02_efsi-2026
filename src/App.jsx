@@ -1,120 +1,199 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import Titulo from './components/Titulos'
+import Subtitulo from './components/subtitulos'
+import InputText from './components/inputTxt'
+import InputNum from './components/inputNum'
+import Boton from './components/boton'
+import CardResultado from './components/cardResultado'
+import {
+  buscarPokemonPorId,
+  buscarPokemonPorNombre,
+  obtenerListaPokemones,
+  obtenerTipoPokemon,
+} from './services/API'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [nombre, setNombre] = useState('')
+  const [id, setId] = useState('')
+  const [pokemonResultado, setPokemonResultado] = useState(null)
+  const [listaPokemones, setListaPokemones] = useState([])
+  const [filtroNombre, setFiltroNombre] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState('')
+  const [nombresPorTipo, setNombresPorTipo] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    cargarLista()
+  }, [])
+
+  async function cargarLista() {
+    try {
+      setLoading(true)
+      setError('')
+      const data = await obtenerListaPokemones(20)
+      setListaPokemones(data)
+    } catch {
+      setError('No se pudo cargar la lista inicial de Pokémon.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function manejarBusquedaPorNombre(event) {
+    event.preventDefault()
+
+    if (!nombre.trim()) {
+      setError('Ingresá un nombre para buscar.')
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError('')
+      const data = await buscarPokemonPorNombre(nombre)
+      setPokemonResultado(data)
+    } catch {
+      setPokemonResultado(null)
+      setError('No existe un Pokémon con ese nombre.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function manejarBusquedaPorId(event) {
+    event.preventDefault()
+
+    if (!id.trim()) {
+      setError('Ingresá un ID para buscar.')
+      return
+    }
+
+    if (!/^\d+$/.test(id) || Number(id) <= 0) {
+      setError('El ID debe ser un número entero mayor a 0.')
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError('')
+      const data = await buscarPokemonPorId(id)
+      setPokemonResultado(data)
+    } catch {
+      setPokemonResultado(null)
+      setError('No existe un Pokémon con ese ID.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function manejarFiltroTipo() {
+    if (!filtroTipo.trim()) {
+      setNombresPorTipo(null)
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError('')
+      const nombres = await obtenerTipoPokemon(filtroTipo)
+      setNombresPorTipo(nombres)
+    } catch {
+      setNombresPorTipo([])
+      setError('No existe ese tipo de Pokémon.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function probarErrorIntencional() {
+    try {
+      setLoading(true)
+      setError('')
+      await buscarPokemonPorNombre('pokemon-que-no-existe-123456')
+    } catch {
+      setPokemonResultado(null)
+      setError('Error intencional: el recurso solicitado no existe.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const listaFiltrada = useMemo(() => {
+    return listaPokemones.filter((pokemon) => {
+      const coincideNombre = pokemon.nombre
+        .toLowerCase()
+        .includes(filtroNombre.toLowerCase())
+      const coincideTipo =
+        !nombresPorTipo || nombresPorTipo.includes(pokemon.nombre.toLowerCase())
+
+      return coincideNombre && coincideTipo
+    })
+  }, [filtroNombre, listaPokemones, nombresPorTipo])
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="app">
+      <Titulo contenido="Mini Pokédex Web" />
+
+      <section className="panel">
+        <Subtitulo contenido="Búsqueda individual" />
+
+        <form onSubmit={manejarBusquedaPorNombre} className="fila">
+          <InputText
+            value={nombre}
+            onChange={(event) => setNombre(event.target.value)}
+            placeholder="Buscar por nombre (ej: pikachu)"
+          />
+          <Boton type="submit" contenido="Buscar nombre" />
+        </form>
+
+        <form onSubmit={manejarBusquedaPorId} className="fila">
+          <InputNum
+            value={id}
+            onChange={(event) => setId(event.target.value)}
+            placeholder="Buscar por ID (ej: 25)"
+          />
+          <Boton type="submit" contenido="Buscar ID" />
+        </form>
+
+        <div className="fila">
+          <Boton contenido="Probar error intencional" onClick={probarErrorIntencional} />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+
+        {pokemonResultado && <CardResultado pokemon={pokemonResultado} />}
       </section>
 
-      <div className="ticks"></div>
+      <section className="panel">
+        <Subtitulo contenido="Lista limitada y filtros" />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="fila">
+          <InputText
+            value={filtroNombre}
+            onChange={(event) => setFiltroNombre(event.target.value)}
+            placeholder="Filtrar lista por nombre"
+          />
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+
+        <div className="fila">
+          <InputText
+            value={filtroTipo}
+            onChange={(event) => setFiltroTipo(event.target.value)}
+            placeholder="Filtrar por tipo (ej: fire, water)"
+          />
+          <Boton contenido="Aplicar tipo" onClick={manejarFiltroTipo} />
+        </div>
+
+        <div className="lista-grid">
+          {listaFiltrada.map((pokemon) => (
+            <CardResultado key={pokemon.id} pokemon={pokemon} />
+          ))}
         </div>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {loading && <p className="estado">Cargando...</p>}
+      {error && <p className="estado error">{error}</p>}
+    </main>
   )
 }
 
