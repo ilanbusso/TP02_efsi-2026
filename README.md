@@ -1,4 +1,4 @@
-# TP02 - Mini Pokédex Web (React)
+#TP02 - Mini Pokédex Web (React)
 
 Esta es una app web simple hecha con **React + JSX + CSS + JavaScript** usando la API pública de Pokémon: [https://pokeapi.co/](https://pokeapi.co/).
 
