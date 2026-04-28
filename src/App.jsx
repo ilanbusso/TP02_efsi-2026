@@ -44,7 +44,7 @@ function App() {
     event.preventDefault()
 
     if (!nombre.trim()) {
-      setError('Ingresá un nombre para buscar.')
+      setError('Ingresá un nombre para buscar.');
       return
     }
 
